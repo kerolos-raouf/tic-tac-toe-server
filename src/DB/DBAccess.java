@@ -38,7 +38,7 @@ public class DBAccess {
     
        ResultSet rs ;
        
-       Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/Testing","DB","DB");
+       Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","DB","DB");
        PreparedStatement stmt = 
             con.prepareStatement("SELECT USERNAME FROM SIGNUP WHERE USERNAME=? ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
        stmt.setString(1,username );
@@ -56,7 +56,7 @@ public class DBAccess {
   public static boolean loginValidation(String username, String password) throws SQLException
   {
       ResultSet rs;
-      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/Testing","DB","DB");
+      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","DB","DB");
       PreparedStatement stmt = 
                           con.prepareStatement("SELECT USERNAME,PASSWORD FROM SIGNUP WHERE USERNAME=? AND PASSWORD=? ", 
                                   ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);

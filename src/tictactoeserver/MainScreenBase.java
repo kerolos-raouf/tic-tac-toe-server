@@ -28,7 +28,7 @@ public class MainScreenBase extends AnchorPane {
         stopButton = new Button();
         exitButton = new Button();
         text = new Text();
-        ip = "10.10.13.71";
+        ip = "10.10.3.132";
         port = 5005;
         //change ip here
         serverController = new ServerController(ip, 5005);

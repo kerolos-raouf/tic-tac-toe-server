@@ -11,11 +11,12 @@ package DB;
  */
 public class Player {
     
-    String username, password;
-    int score;
-    boolean isPlaying, isActive;
+    private String username, password;
+    private int score;
+    private boolean isPlaying, isActive;
     
     public Player(){}
+
 
     public Player(String username, String password, int score, boolean isPlaying, boolean isActive) {
         this.username = username;
@@ -24,7 +25,7 @@ public class Player {
         this.isPlaying = isPlaying;
         this.isActive = isActive;
     }
-
+ 
     public String getUsername() {
         return username;
     }

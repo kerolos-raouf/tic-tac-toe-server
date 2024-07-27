@@ -7,6 +7,9 @@ package tictactoeserver;
 
 import data.MyServer;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import util.CustomDialogBase;
@@ -21,6 +24,11 @@ public class ServerController{
     private MyServer server;
     private boolean started;
     private boolean suspended;
+    private String ip;
+    
+    public String getIp(){
+        return ip;
+    }
 
     public boolean isSuspended()
     {
@@ -45,8 +53,10 @@ public class ServerController{
 
     public ServerController(String serverIp, int port)
     {
+        ip = getLocalNetworkAddress();
+        ip = ip != null ? ip : serverIp;
         try {
-            server = MyServer.initialize(serverIp, port);
+            server = MyServer.initialize(ip , port);
             started = false;
             suspended = false;
         } catch (IllegalArgumentException ex) {
@@ -57,10 +67,36 @@ public class ServerController{
         }
     }
     
+    private String getLocalNetworkAddress(){
+        String ip = null;
+        try{
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while(interfaces.hasMoreElements()){
+                NetworkInterface ni = interfaces.nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while(addresses.hasMoreElements()){
+                    InetAddress address = addresses.nextElement();
+                    if(!address.isLoopbackAddress() && address.isSiteLocalAddress()){
+                        ip = address.getHostAddress();
+                        System.out.println("IP: " + ip);
+                    }
+                }
+            }
+        } catch(IOException ex){
+            ex.printStackTrace();
+            System.err.println("failed to get ip address");
+        }
+        return ip;
+       }
+    
+
+    
      public ServerController(String serverIp)
     {
+        ip = getLocalNetworkAddress();
+        ip = ip != null ? ip : serverIp;
         try {
-            server = MyServer.initialize(serverIp);
+            server = MyServer.initialize(ip);
             System.out.println(server.getPort());
             System.out.println(server.getAddr());
         } catch (IllegalArgumentException ex) {

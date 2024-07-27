@@ -5,6 +5,8 @@
  */
 package data;
 
+import DB.DBAccess;
+import static DB.DBAccess.initiateDbConnection;
 import DB.Player;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,7 +102,11 @@ public class MyServer extends Thread{
             this.addr = addr;
             if (port < 0 || port > 0xFFFF) throw new IllegalArgumentException("Invalid port value");
             socket = new ServerSocket(port, 0, InetAddress.getByName(this.addr));
-
+        try {
+            DBAccess.initiateDbConnection();
+        } catch (SQLException ex) {
+            Logger.getLogger(MyServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
 //              socket = new ServerSocket(port);
               System.out.println(socket.getInetAddress().getHostAddress());
               System.out.println(socket.getLocalPort());

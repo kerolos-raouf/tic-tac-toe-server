@@ -17,6 +17,7 @@ public class MainScreenBase extends AnchorPane {
     protected final Button exitButton;
     protected final Text text;
     private String ip;
+    private int port;
     
     private final ServerController serverController;
 
@@ -28,6 +29,7 @@ public class MainScreenBase extends AnchorPane {
         exitButton = new Button();
         text = new Text();
         ip = "10.10.13.71";
+        port = 5005;
         //change ip here
         serverController = new ServerController(ip, 5005);
         
@@ -95,7 +97,7 @@ public class MainScreenBase extends AnchorPane {
         text.setLayoutY(113.0);
         text.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text.setStrokeWidth(0.0);
-        text.setText("Server IP: " + ip);
+        text.setText("Server IP: " + ip + "/" + port);
         text.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
         text.setWrappingWidth(459.013671875);
         text.setFont(new Font("Agency FB Bold", 36.0));

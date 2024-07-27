@@ -11,9 +11,9 @@ package DB;
  */
 public class Player {
     
-    String username, password;
-    int score;
-    boolean isPlaying, isActive;
+    protected String username, password;
+    protected int score;
+    protected boolean isPlaying, isActive;
     
     public Player(){}
 

@@ -203,10 +203,12 @@ class PlayerHandler extends Thread{
                         setMoveToTheOpponent(pl.getMove());
                     }
                     case LOG_IN:
+                        checkLoginValidation(pl.getUsername(),pl.getPassword());
                         break;
                     case LOG_IN_RESPONSE:
                         break;
                     case SIGN_UP:
+                        checkSignupValidation(pl.getUsername(),pl.getPassword());
                         break;
                     case SIGN_UP_RESPONSE:
                         break;
@@ -288,6 +290,43 @@ class PlayerHandler extends Thread{
         }  
     }
     
+
+    void checkLoginValidation(String userName,String password)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.LOG_IN_RESPONSE);
+        boolean response;
+        try {
+            response = DBAccess.loginValidation(userName, password);
+             pl.setResponse(response);
+            String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+            opponent.printStream.println(msg);
+        } catch (SQLException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }
+    
+      void checkSignupValidation(String userName,String password)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.SIGN_UP_RESPONSE);
+        boolean response;
+        try {
+            response = DBAccess.signupValidation(userName);
+            if(!response)
+            {
+                Player newPlayer = new Player(userName,password,0,false,false);
+                DBAccess.insertPlayer(newPlayer);         
+            }  
+            pl.setResponse(!response);
+            String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+            opponent.printStream.println(msg);
+        } catch (SQLException | JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     void sendRequestToOppenent(String name)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
@@ -365,6 +404,7 @@ class PlayerHandler extends Thread{
         {
             printStream.println(msg);
         }
+
     }
 }
 

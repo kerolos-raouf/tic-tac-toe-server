@@ -16,28 +16,33 @@ public class PlayerMessageBody extends Player{
     
     private SocketRoute state;
     private boolean response;
+    private String message;
     private String move;
     private ArrayList<ScoreBoardItem> scoreBoardItem;
+    private ArrayList<Player> players;
 
-    public PlayerMessageBody()
+
+
+    
+        public ArrayList<Player> getPlayers()
     {
-        super();
-    }
-    
-    public PlayerMessageBody(SocketRoute state, String move, boolean isRquestAccepted, boolean isServerAwake, ArrayList<ScoreBoardItem> scoreBoardItem) {
-        this.state = state;
-        this.move = move;
-        this.scoreBoardItem = scoreBoardItem;
+        return players;
     }
 
-    public PlayerMessageBody(SocketRoute state, String move, boolean isRquestAccepted, boolean isServerAwake, ArrayList<ScoreBoardItem> scoreBoardItem, String username, String password, int score, boolean isPlaying, boolean isActive) {
-        super(username, password, score, isPlaying, isActive);
-        this.state = state;
-        this.move = move;
-        this.scoreBoardItem = scoreBoardItem;
+    public void setPlayers(ArrayList<Player> players)
+    {
+        this.players = players;
     }
 
-    
+       public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(String message)
+    {
+        this.message = message;
+    }
     
     
     public String getUsername() {
@@ -114,5 +119,9 @@ public class PlayerMessageBody extends Player{
     }
     
     
+    public PlayerMessageBody()
+    {
+        super();
+    }
     
 }

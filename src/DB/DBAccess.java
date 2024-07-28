@@ -33,7 +33,7 @@ public class DBAccess {
        con.close();
        
 }
-   public static Player getPlayer(String username) throws SQLException
+   public static Player getPlayerUsername(String username) throws SQLException
    {
      ResultSet rs ;
      String foundUser;
@@ -56,7 +56,7 @@ public class DBAccess {
     
        ResultSet rs ;
        
-       Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","DB","DB");
+       Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
        PreparedStatement stmt = 
             con.prepareStatement("SELECT USERNAME FROM PLAYER WHERE USERNAME=? ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
        stmt.setString(1,username );
@@ -74,7 +74,7 @@ public class DBAccess {
   public static boolean loginValidation(String username, String password) throws SQLException
   {
       ResultSet rs;
-      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","DB","DB");
+      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
       PreparedStatement stmt = 
                           con.prepareStatement("SELECT USERNAME,PASSWORD FROM PLAYER WHERE USERNAME=? AND PASSWORD=? ", 
                                   ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -88,6 +88,26 @@ public class DBAccess {
        else {
            return false;
        }
+  }
+  
+  public static void setPlayingState(String username, boolean playing) throws SQLException
+  {
+      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
+    PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET isPlaying=?  WHERE USERNAME =?");
+    updateStmt.setBoolean(1,playing);
+    updateStmt.setString(2, username);
+    updateStmt.executeUpdate();
+  }
+  
+   public static void setActivityState(String username, boolean active) throws SQLException
+  {
+      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
+    PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET isActive=?  WHERE USERNAME =?");
+    updateStmt.setBoolean(1,active);
+    updateStmt.setString(2, username);
+    updateStmt.executeUpdate();
   }
   
  }

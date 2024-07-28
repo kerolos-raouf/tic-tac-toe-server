@@ -5,7 +5,13 @@
  */
 package data;
 
+import DB.DBAccess;
+import static DB.DBAccess.initiateDbConnection;
 import DB.Player;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.JSONParser;
+import domain.PlayerMessageBody;
+import domain.SocketRoute;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +21,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,12 +37,7 @@ public class MyServer extends Thread{
     private Socket createdSocket;
     private int port;
     private String addr;
-    static Vector<PlayerHandler> playerHandlers;
-
     
-    static{
-        playerHandlers = new Vector();
-    }
   
     //Singleton instance of server
     private static MyServer instance;
@@ -99,7 +103,11 @@ public class MyServer extends Thread{
             this.addr = addr;
             if (port < 0 || port > 0xFFFF) throw new IllegalArgumentException("Invalid port value");
             socket = new ServerSocket(port, 0, InetAddress.getByName(this.addr));
-
+        try {
+            DBAccess.initiateDbConnection();
+        } catch (SQLException ex) {
+            Logger.getLogger(MyServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
 //              socket = new ServerSocket(port);
               System.out.println(socket.getInetAddress().getHostAddress());
               System.out.println(socket.getLocalPort());
@@ -115,7 +123,7 @@ public class MyServer extends Thread{
             try {
                 while(true){
                     createdSocket = socket.accept();
-                    playerHandlers.add(new PlayerHandler(createdSocket));
+                    new PlayerHandler(createdSocket);
                 }
                 //TODO: player handler implementation
             }catch(SocketException ex){
@@ -139,11 +147,18 @@ public class MyServer extends Thread{
 }
 
 class PlayerHandler extends Thread{
-    Socket socket;
-    BufferedReader bufferedReader;
-    PrintStream printStream;
-    Player opponent;
-    Player player;
+    private Socket socket;
+    private BufferedReader bufferedReader;
+    private PrintStream printStream;
+    private PlayerHandler opponent;
+    private Player player;
+    
+    static ConcurrentSkipListSet<PlayerHandler> playerHandlers;
+
+    
+    static{
+        playerHandlers = new ConcurrentSkipListSet<>();
+    }
     
     public PlayerHandler(Socket playerSocket)
     {
@@ -151,7 +166,9 @@ class PlayerHandler extends Thread{
             this.socket = playerSocket;
             bufferedReader = new BufferedReader(new InputStreamReader(playerSocket.getInputStream()));
             printStream = new PrintStream(socket.getOutputStream());
-            player = opponent = null;
+            player = null;
+            opponent = null;
+            playerHandlers.add(this);
 //            jsonObject = new JSONObject(Player.toMap(player));
 //              jsonObject = new JSONObject(new HashMap<String, Object>(){{
 //           put("hello", "hello");
@@ -176,15 +193,87 @@ class PlayerHandler extends Thread{
        while(true){
             try {
                 String str = bufferedReader.readLine();
+                PlayerMessageBody pl = JSONParser.convertFromJSONToPlayerMessageBody(str);
+                switch(pl.getState())
+                {
+                    case PLAYER_MOVE:
+                    {
+                        setMoveToTheOpponent(pl.getMove());
+                    }
+                    case LOG_IN:
+                        break;
+                    case LOG_IN_RESPONSE:
+                        break;
+                    case SIGN_UP:
+                        break;
+                    case SIGN_UP_RESPONSE:
+                        break;
+                    case AVAILABLE_PLAYERS:
+                        sendAllPlayers(pl);
+                        break;
+                    case LOG_OUT:
+                        break;
+                    case SURRENDER:
+                        break;
+                    case CHECK_SERVER:
+                        break;
+                    case ALL_PLAYERS:
+                        break;
+                    case REQUEST_TO_PLAY:
+                        break;
+                    case RESPONSE_TO_REQUEST_TO_PLAY:
+                        break;
+                    case DIALOG_REQUEST_TO_PLAY:
+                        break;
+                    case WAITING_REQUEST_TO_PLAY:
+                        break;
+                    case SCORE_BOARD:
+                        break;
+                    default:
+                        throw new AssertionError(pl.getState().name());
+                }
                 System.out.println(str);
                } catch (IOException ex) {
                    System.out.println("connection reset exception message is expected, just added this line to check if another exception message is thrown");
                    Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
                    stop();
-                   MyServer.playerHandlers.remove(this);
+                   playerHandlers.remove(this);
                    break;
                }
        }
     }
+    
+    
+    void setMoveToTheOpponent(String move)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setMove(move);
+        pl.setState(SocketRoute.PLAYER_MOVE);
+        try {
+            String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+            opponent.printStream.println(msg);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void sendAllPlayers(PlayerMessageBody pl)
+    {
+        String msg;
+        try{
+             try {
+                pl.setPlayers(DBAccess.getAllPlayers());
+            } catch (SQLException ex) {
+                pl.setMessage("Couldn't get all players at the moment , please try again");
+                pl.setState(SocketRoute.ERROR_OCCURED);
+                Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+             printStream.println(msg);
+        }catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }
+    
 }
 

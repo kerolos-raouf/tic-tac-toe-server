@@ -105,13 +105,8 @@ public class DBAccess {
 
        rs = stmt.executeQuery();
        
-       if(rs.next())
-       {
-           return true;
-       }
-       else {
-           return false;
-       }
+       return rs.next(); 
+       
 
 }
   public static boolean loginValidation(String username, String password) throws SQLException
@@ -124,13 +119,7 @@ public class DBAccess {
       stmt.setString(1, username);
       stmt.setString(1, password);
       rs = stmt.executeQuery();
-       if(rs.next())
-       {
-           return true;
-       }
-       else {
-           return false;
-       }
+        return rs.next();
   }
   
 

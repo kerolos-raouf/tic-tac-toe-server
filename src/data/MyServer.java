@@ -223,7 +223,10 @@ class PlayerHandler extends Thread{
                     } 
                        
                     case RESPONSE_TO_REQUEST_TO_PLAY:
+                    {
+                        respondToRequestToPlay(pl.getOpponentName(),pl.getResponse());
                         break;
+                    }
                     case DIALOG_REQUEST_TO_PLAY:
                         break;
                     case WAITING_REQUEST_TO_PLAY:
@@ -262,6 +265,7 @@ class PlayerHandler extends Thread{
     {
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setState(SocketRoute.REQUEST_TO_PLAY);
+        pl.setOpponentName(player.getUsername());
         String msg = "";
         try {
              msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -278,8 +282,29 @@ class PlayerHandler extends Thread{
                 }
             }
         }
-        
-        
+    }
+    
+    void respondToRequestToPlay(String name,boolean reponse)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.RESPONSE_TO_REQUEST_TO_PLAY);
+        pl.setResponse(reponse);
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(!msg.isEmpty())
+        {
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player.getUsername() == name)
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
+        }
     }
     
 }

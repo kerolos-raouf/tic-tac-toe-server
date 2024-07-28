@@ -16,13 +16,38 @@ public class PlayerMessageBody extends Player{
     
     private SocketRoute state;
     private boolean response;
+    private String message;
     private String move;
     private ArrayList<ScoreBoardItem> scoreBoardItem;
+
     private String opponentName;
 
-    public PlayerMessageBody()
+    private ArrayList<Player> players;
+
+
+
+
+    
+        public ArrayList<Player> getPlayers()
     {
-        super();
+
+        return players;
+    }
+
+    public void setPlayers(ArrayList<Player> players)
+    {
+        this.players = players;
+    }
+
+       public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(String message)
+    {
+        this.message = message;
+
     }
     
     
@@ -108,5 +133,9 @@ public class PlayerMessageBody extends Player{
     }
     
     
+    public PlayerMessageBody()
+    {
+        super();
+    }
     
 }

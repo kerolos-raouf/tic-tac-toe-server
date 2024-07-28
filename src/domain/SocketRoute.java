@@ -25,4 +25,5 @@ public enum SocketRoute {
     WAITING_REQUEST_TO_PLAY,
     SCORE_BOARD,
     CHECK_SERVER,
+    ERROR_OCCURED,
 }

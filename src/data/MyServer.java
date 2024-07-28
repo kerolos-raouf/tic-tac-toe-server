@@ -310,6 +310,7 @@ class PlayerHandler extends Thread{
             response = DBAccess.loginValidation(userName, password);
             if(response)
             {
+                DBAccess.setActivityState(userName, true);
                 Player currentPlayer = DBAccess.getPlayerUsername(userName);
                 player = currentPlayer;
                 pl.setUsername(currentPlayer.getUsername());
@@ -320,6 +321,7 @@ class PlayerHandler extends Thread{
             }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+            
             printStream.println(msg);
         } catch (SQLException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);

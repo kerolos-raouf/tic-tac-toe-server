@@ -197,13 +197,18 @@ class PlayerHandler extends Thread{
                     case PLAYER_MOVE:
                     {
                         setMoveToTheOpponent(pl.getMove());
+                        break;
                     }
                     case LOG_IN:
+                    {
                         break;
+                    }
                     case LOG_IN_RESPONSE:
                         break;
                     case SIGN_UP:
+                    {
                         break;
+                    }
                     case SIGN_UP_RESPONSE:
                         break;
                     case AVAILABLE_PLAYERS:
@@ -253,6 +258,9 @@ class PlayerHandler extends Thread{
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    
+    
     
 }
 

@@ -195,6 +195,7 @@ class PlayerHandler extends Thread{
        while(true){
             try {
                 String str = bufferedReader.readLine();
+                System.out.println(str);
                 PlayerMessageBody pl = JSONParser.convertFromJSONToPlayerMessageBody(str);
                 switch(pl.getState())
                 {
@@ -208,7 +209,6 @@ class PlayerHandler extends Thread{
                     {
 
                         checkLoginValidation(pl.getUsername(),pl.getPassword());
-                        System.out.println("done");
 
                         break;
                     }
@@ -311,13 +311,12 @@ class PlayerHandler extends Thread{
             if(response)
             {
                 DBAccess.setActivityState(userName, true);
-                Player currentPlayer = DBAccess.getPlayerUsername(userName);
-                player = currentPlayer;
-                pl.setUsername(currentPlayer.getUsername());
-                pl.setPassword(currentPlayer.getPassword());
-                pl.setScore(currentPlayer.getScore());
-                pl.setIsActive(currentPlayer.isIsActive());
-                pl.setIsPlaying(currentPlayer.isIsPlaying());
+                player = DBAccess.getPlayerByUsername(userName);
+                pl.setUsername(player.getUsername());
+                pl.setPassword(player.getPassword());
+                pl.setScore(player.getScore());
+                pl.setIsActive(player.isIsActive());
+                pl.setIsPlaying(player.isIsPlaying());
             }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -352,6 +351,7 @@ class PlayerHandler extends Thread{
 
     void sendRequestToOppenent(String name)
     {
+        
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setState(SocketRoute.REQUEST_TO_PLAY);
         pl.setOpponentName(player.getUsername());
@@ -365,8 +365,10 @@ class PlayerHandler extends Thread{
         {
             for(PlayerHandler playerHandler : playerHandlers)
             {
+                //playerHandler.printStream.println(msg);
                 if(playerHandler.player.getUsername() == name)
                 {
+                    System.out.println(playerHandler.player.getUsername());
                     playerHandler.printStream.println(msg);
                 }
             }

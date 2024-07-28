@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="tictactoeServer.jnlp">
+  <information>
+    <title>tictactoeServer</title>
+    <vendor>emyal</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="lib\derby.jar" size="2766479" download="eager" />
+    <jar href="lib\derbyclient.jar" size="576624" download="eager" />
+    <jar href="lib\derbynet.jar" size="248898" download="eager" />
+    <jar href="lib\jackson-annotations-2.17.1.jar" size="78491" download="eager" />
+    <jar href="lib\jackson-core-2.17.1.jar" size="581860" download="eager" />
+    <jar href="lib\jackson-databind-2.17.1.jar" size="1649385" download="eager" />
+    <jar href="lib\java-json.jar" size="84697" download="eager" />
+    <jar href="tictactoeServer.jar" size="436226" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="tictactoeServer" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="tictactoeserver.TictactoeServer"  name="tictactoeServer" />
+  <update check="always"/>
+</jnlp>

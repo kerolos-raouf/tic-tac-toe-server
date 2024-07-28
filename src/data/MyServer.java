@@ -11,6 +11,7 @@ import DB.Player;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.JSONParser;
 import domain.PlayerMessageBody;
+import domain.ScoreBoardItem;
 import domain.SocketRoute;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,8 +22,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -145,17 +149,17 @@ public class MyServer extends Thread{
 }
 
 class PlayerHandler extends Thread{
-    Socket socket;
-    BufferedReader bufferedReader;
-    PrintStream printStream;
-    PlayerHandler opponent;
-    Player player;
+    private Socket socket;
+    private BufferedReader bufferedReader;
+    private PrintStream printStream;
+    private PlayerHandler opponent;
+    private Player player;
     
-    static Vector<PlayerHandler> playerHandlers;
+    static ConcurrentSkipListSet<PlayerHandler> playerHandlers;
 
     
     static{
-        playerHandlers = new Vector();
+        playerHandlers = new ConcurrentSkipListSet<>();
     }
     
     public PlayerHandler(Socket playerSocket)
@@ -191,7 +195,7 @@ class PlayerHandler extends Thread{
        while(true){
             try {
                 String str = bufferedReader.readLine();
-                PlayerMessageBody pl = new PlayerMessageBody();
+                PlayerMessageBody pl = JSONParser.convertFromJSONToPlayerMessageBody(str);
                 switch(pl.getState())
                 {
                     case PLAYER_MOVE:
@@ -200,18 +204,27 @@ class PlayerHandler extends Thread{
                         break;
                     }
                     case LOG_IN:
+
                     {
+
+                        checkLoginValidation(pl.getUsername(),pl.getPassword());
+
                         break;
                     }
                     case LOG_IN_RESPONSE:
                         break;
                     case SIGN_UP:
+
                     {
+
+                        checkSignupValidation(pl.getUsername(),pl.getPassword());
+
                         break;
                     }
                     case SIGN_UP_RESPONSE:
                         break;
                     case AVAILABLE_PLAYERS:
+                        sendAllPlayers(pl);
                         break;
                     case LOG_OUT:
                         break;
@@ -222,15 +235,26 @@ class PlayerHandler extends Thread{
                     case ALL_PLAYERS:
                         break;
                     case REQUEST_TO_PLAY:
+                    {
+                        sendRequestToOppenent(pl.getOpponentName());
                         break;
+                    } 
+                       
                     case RESPONSE_TO_REQUEST_TO_PLAY:
+                    {
+                        respondToRequestToPlay(pl.getOpponentName(),pl.getResponse());
                         break;
+                    }
                     case DIALOG_REQUEST_TO_PLAY:
                         break;
                     case WAITING_REQUEST_TO_PLAY:
                         break;
                     case SCORE_BOARD:
+                    {
+                        sendScoreBoard();
                         break;
+                    }  
+                      
                     default:
                         throw new AssertionError(pl.getState().name());
                 }
@@ -258,9 +282,142 @@ class PlayerHandler extends Thread{
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    private void sendAllPlayers(PlayerMessageBody pl)
+    {
+        String msg;
+        try{
+             try {
+                pl.setPlayers(DBAccess.getAllPlayers());
+            } catch (SQLException ex) {
+                pl.setMessage("Couldn't get all players at the moment , please try again");
+                pl.setState(SocketRoute.ERROR_OCCURED);
+                Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+             printStream.println(msg);
+        }catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }
+    
+
+    void checkLoginValidation(String userName,String password)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.LOG_IN_RESPONSE);
+        boolean response;
+        try {
+            response = DBAccess.loginValidation(userName, password);
+             pl.setResponse(response);
+            String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+            opponent.printStream.println(msg);
+        } catch (SQLException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }
+    
+      void checkSignupValidation(String userName,String password)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.SIGN_UP_RESPONSE);
+        boolean response;
+        try {
+            response = DBAccess.signupValidation(userName);
+            if(!response)
+            {
+                Player newPlayer = new Player(userName,password,0,false,false);
+                DBAccess.insertPlayer(newPlayer);         
+            }  
+            pl.setResponse(!response);
+            String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+            opponent.printStream.println(msg);
+        } catch (SQLException | JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    void sendRequestToOppenent(String name)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.REQUEST_TO_PLAY);
+        pl.setOpponentName(player.getUsername());
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(!msg.isEmpty())
+        {
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player.getUsername() == name)
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
+        }
+    }
+    
+    void respondToRequestToPlay(String name,boolean reponse)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.RESPONSE_TO_REQUEST_TO_PLAY);
+        pl.setResponse(reponse);
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(!msg.isEmpty())
+        {
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player.getUsername() == name)
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
+        }
+    }
     
     
-    
-    
+    void sendScoreBoard()
+    {
+        ArrayList<ScoreBoardItem> scoreList = new ArrayList<>();
+        ArrayList<Player> playersList = new ArrayList<>();
+        try {
+            playersList = DBAccess.getAllPlayers();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        for(Player player : playersList)
+        {
+            scoreList.add(new ScoreBoardItem(player.getUsername(),player.getScore()));
+        }
+        
+        
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.SCORE_BOARD);
+        pl.setScoreBoardItem(scoreList);
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if(!scoreList.isEmpty())
+        {
+            printStream.println(msg);
+        }
+
+    }
+
 }
 

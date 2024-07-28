@@ -5,6 +5,9 @@
  */
 package DB;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author emyal
@@ -19,6 +22,10 @@ public class Player {
     
     public Player(){}
 
+    public Player(String username) {
+        this.username = username;
+    }
+
 
     public Player(String username, String password, int score, boolean isPlaying, boolean isActive) {
         this.username = username;
@@ -26,6 +33,14 @@ public class Player {
         this.score = score;
         this.isPlaying = isPlaying;
         this.isActive = isActive;
+    }
+    
+    public Player(ResultSet res) throws SQLException{
+        this.username  = res.getString("USERNAME");
+        this.password = res.getString("PASSWORD");
+        this.score = res.getInt("SCORE");
+        this.isPlaying = res.getBoolean("ISPLAYING");
+        this.isActive  = res.getBoolean("ISACTIVE");
     }
  
     public String getUsername() {

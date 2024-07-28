@@ -21,8 +21,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -145,17 +147,17 @@ public class MyServer extends Thread{
 }
 
 class PlayerHandler extends Thread{
-    Socket socket;
-    BufferedReader bufferedReader;
-    PrintStream printStream;
-    PlayerHandler opponent;
-    Player player;
+    private Socket socket;
+    private BufferedReader bufferedReader;
+    private PrintStream printStream;
+    private PlayerHandler opponent;
+    private Player player;
     
-    static Vector<PlayerHandler> playerHandlers;
+    static ConcurrentSkipListSet<PlayerHandler> playerHandlers;
 
     
     static{
-        playerHandlers = new Vector();
+        playerHandlers = new ConcurrentSkipListSet<>();
     }
     
     public PlayerHandler(Socket playerSocket)
@@ -191,7 +193,7 @@ class PlayerHandler extends Thread{
        while(true){
             try {
                 String str = bufferedReader.readLine();
-                PlayerMessageBody pl = new PlayerMessageBody();
+                PlayerMessageBody pl = JSONParser.convertFromJSONToPlayerMessageBody(str);
                 switch(pl.getState())
                 {
                     case PLAYER_MOVE:
@@ -207,6 +209,7 @@ class PlayerHandler extends Thread{
                     case SIGN_UP_RESPONSE:
                         break;
                     case AVAILABLE_PLAYERS:
+                        sendAllPlayers(pl);
                         break;
                     case LOG_OUT:
                         break;
@@ -252,6 +255,24 @@ class PlayerHandler extends Thread{
         } catch (JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void sendAllPlayers(PlayerMessageBody pl)
+    {
+        String msg;
+        try{
+             try {
+                pl.setPlayers(DBAccess.getAllPlayers());
+            } catch (SQLException ex) {
+                pl.setMessage("Couldn't get all players at the moment , please try again");
+                pl.setState(SocketRoute.ERROR_OCCURED);
+                Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+             printStream.println(msg);
+        }catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }  
     }
     
 }

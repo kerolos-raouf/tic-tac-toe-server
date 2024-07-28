@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.derby.jdbc.ClientDriver;
@@ -49,11 +51,15 @@ public class DBAccess {
         }
     }
     
-   public static ResultSet getAllPlayers() throws SQLException{
+   public static ArrayList<Player> getAllPlayers() throws SQLException{
         if(ps != null) ps.close();
         ps = con.prepareStatement("select username, isplaying, isactive from Player", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         rs = ps.executeQuery();
-        return rs;
+        ArrayList<Player> temp = new ArrayList<>();
+        while(rs.next()){
+            temp.add(new Player(rs));
+        }
+        return temp;
     }   
    
    public static void insertPlayer(Player player) throws SQLException{

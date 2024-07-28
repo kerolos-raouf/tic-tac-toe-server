@@ -1,5 +1,9 @@
 package tictactoeserver;
 
+import DB.DBAccess;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -114,5 +118,12 @@ public class MainScreenBase extends AnchorPane {
         getChildren().add(exitButton);
         getChildren().add(text);
         
+        stage.setOnCloseRequest((e) -> {
+            try {
+                DBAccess.closeConnection();
+            } catch (SQLException ex) {
+                Logger.getLogger(MainScreenBase.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
 }

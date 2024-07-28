@@ -201,15 +201,26 @@ class PlayerHandler extends Thread{
                     case PLAYER_MOVE:
                     {
                         setMoveToTheOpponent(pl.getMove());
+                        break;
                     }
                     case LOG_IN:
+
+                    {
+
                         checkLoginValidation(pl.getUsername(),pl.getPassword());
+
                         break;
+                    }
                     case LOG_IN_RESPONSE:
                         break;
                     case SIGN_UP:
+
+                    {
+
                         checkSignupValidation(pl.getUsername(),pl.getPassword());
+
                         break;
+                    }
                     case SIGN_UP_RESPONSE:
                         break;
                     case AVAILABLE_PLAYERS:
@@ -326,6 +337,7 @@ class PlayerHandler extends Thread{
         } catch (SQLException | JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
     void sendRequestToOppenent(String name)
     {
@@ -406,5 +418,6 @@ class PlayerHandler extends Thread{
         }
 
     }
+
 }
 

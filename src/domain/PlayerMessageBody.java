@@ -13,18 +13,21 @@ import java.util.ArrayList;
  * @author Kerolos Raouf
  */
 public class PlayerMessageBody extends Player{
-    
+
     private SocketRoute state;
     private boolean response;
-    private String message;
     private String move;
     private ArrayList<ScoreBoardItem> scoreBoardItem;
-
+    private ArrayList<Player> players;
+    private int gameBoardState;
+    private String message;
     private String opponentName;
 
-    private ArrayList<Player> players;
-
-
+    
+       public PlayerMessageBody()
+    {
+        super();
+    }
 
 
     
@@ -133,9 +136,15 @@ public class PlayerMessageBody extends Player{
     }
     
     
-    public PlayerMessageBody()
-    {
-        super();
+ 
+    public int getGameBoardState() {
+        return gameBoardState;
     }
+
+    public void setGameBoardState(int gameBoardState) {
+        this.gameBoardState = gameBoardState;
+    }
+    
+    
     
 }

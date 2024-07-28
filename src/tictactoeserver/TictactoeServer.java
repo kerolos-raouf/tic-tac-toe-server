@@ -21,7 +21,7 @@ public class TictactoeServer extends Application {
         Parent root = new MainScreenBase(stage);
         
         Scene scene = new Scene(root);
-        
+        stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
     }

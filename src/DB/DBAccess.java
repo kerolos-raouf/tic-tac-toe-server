@@ -36,13 +36,12 @@ public class DBAccess {
             //create table if not exists
             if (!tables.next()) {
                 PreparedStatement temp= con.prepareStatement("CREATE TABLE PLAYER " +
-                   "(username VARCHAR(50), " + 
-                   " email VARCHAR(50) NOT NULL, " +     
-                   " password VARCHAR(50) NOT NULL, " +
-                   " score INT NOT NULL WITH DEFAULT 0, " +
-                   " isplaying BOOLEAN NOT NULL WITH DEFAULT FALSE, " +
-                   " isactive BOOLEAN NOT NULL WITH DEFAULT FALSE, " +
-                   " PRIMARY KEY ( username ))");
+                   "(USERNAME VARCHAR(50), " +   
+                   " PASSWORD VARCHAR(50) NOT NULL, " +
+                   " SCORE INT NOT NULL WITH DEFAULT 0, " +
+                   " ISPLAYING BOOLEAN NOT NULL WITH DEFAULT FALSE, " +
+                   " ISACTIVE BOOLEAN NOT NULL WITH DEFAULT FALSE, " +
+                   " PRIMARY KEY ( USERNAME ))");
                 temp.executeUpdate();
                 temp.close();
                 System.out.println("success");
@@ -53,7 +52,7 @@ public class DBAccess {
     
    public static ArrayList<Player> getAllPlayers() throws SQLException{
         if(ps != null) ps.close();
-        ps = con.prepareStatement("select username, isplaying, isactive from Player", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        ps = con.prepareStatement("SELECT * FROM PLAYER", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         rs = ps.executeQuery();
         ArrayList<Player> temp = new ArrayList<>();
         while(rs.next()){
@@ -65,7 +64,7 @@ public class DBAccess {
    public static void insertPlayer(Player player) throws SQLException{
  
     PreparedStatement insertStmt = 
-             con.prepareStatement("INSERT INTO PLAYER (username, password, score, isPlaying, isActive) VALUES (?,?,?,?,?)");
+             con.prepareStatement("INSERT INTO PLAYER (USERNAME, PASSWORD, SCORE, ISPLAYING, ISACTIVE) VALUES (?,?,?,?,?)");
       
        insertStmt.setString(1, player.getUsername()); 
        insertStmt.setString(2, player.getPassword());
@@ -81,13 +80,12 @@ public class DBAccess {
      ResultSet rs ;
      String foundUser;
      Player player = null;
-       DriverManager.registerDriver(new ClientDriver());
-       Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
      PreparedStatement stmt = 
              con.prepareStatement("SELECT USERNAME FROM PLAYER WHERE USERNAME =? ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
   
+     stmt.setString(1, username);
      rs = stmt.executeQuery();
-     while (rs.next())
+     if (rs.next())
      {
         foundUser = rs.getString("USERNAME");
         player = new Player (foundUser);
@@ -97,7 +95,7 @@ public class DBAccess {
 
   public static boolean signupValidation(String username) throws SQLException{
     
-       ResultSet rs ;
+       ResultSet rs;
        PreparedStatement stmt = 
             con.prepareStatement("SELECT USERNAME FROM PLAYER WHERE USERNAME=? ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
@@ -112,20 +110,18 @@ public class DBAccess {
   public static boolean loginValidation(String username, String password) throws SQLException
   {
       ResultSet rs;
-      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
       PreparedStatement stmt = 
                           con.prepareStatement("SELECT USERNAME,PASSWORD FROM PLAYER WHERE USERNAME=? AND PASSWORD=? ", 
                                   ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
       stmt.setString(1, username);
-      stmt.setString(1, password);
+      stmt.setString(2, password);
       rs = stmt.executeQuery();
-        return rs.next();
+      return rs.next();
   }
   
 
   public static void setPlayingState(String username, boolean playing) throws SQLException
   {
-      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
     PreparedStatement updateStmt = 
              con.prepareStatement("UPDATE PLAYER SET isPlaying=?  WHERE USERNAME =?");
     updateStmt.setBoolean(1,playing);
@@ -135,13 +131,14 @@ public class DBAccess {
   
    public static void setActivityState(String username, boolean active) throws SQLException
   {
-      Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/tictactoe","root","root");
     PreparedStatement updateStmt = 
              con.prepareStatement("UPDATE PLAYER SET isActive=?  WHERE USERNAME =?");
     updateStmt.setBoolean(1,active);
     updateStmt.setString(2, username);
     updateStmt.executeUpdate();
   }
+   
+   
   public static void closeConnection() throws SQLException{
         ps.close();
         con.close();

@@ -19,10 +19,9 @@ public class PlayerMessageBody extends Player{
     private String message;
     private String move;
     private ArrayList<ScoreBoardItem> scoreBoardItem;
-
     private String opponentName;
-
     private ArrayList<Player> players;
+    private boolean playerSymbol;
 
 
 
@@ -131,6 +130,15 @@ public class PlayerMessageBody extends Player{
     public void setOpponentName(String opponentName) {
         this.opponentName = opponentName;
     }
+
+    public boolean isPlayerSymbol() {
+        return playerSymbol;
+    }
+
+    public void setPlayerSymbol(boolean playerSymbol) {
+        this.playerSymbol = playerSymbol;
+    }
+    
     
     
     public PlayerMessageBody()

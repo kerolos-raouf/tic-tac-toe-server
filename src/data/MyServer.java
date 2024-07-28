@@ -242,7 +242,7 @@ class PlayerHandler extends Thread{
                        
                     case RESPONSE_TO_REQUEST_TO_PLAY:
                     {
-                        respondToRequestToPlay(pl.getOpponentName(),pl.getResponse());
+                        respondToRequestToPlay(pl.getOpponentName(),pl.getResponse(),pl.isPlayerSymbol());
                         break;
                     }
                     case DIALOG_REQUEST_TO_PLAY:
@@ -367,11 +367,13 @@ class PlayerHandler extends Thread{
         }
     }
     
-    void respondToRequestToPlay(String name,boolean reponse)
+    void respondToRequestToPlay(String name,boolean reponse,boolean symbol)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setState(SocketRoute.RESPONSE_TO_REQUEST_TO_PLAY);
+        pl.setOpponentName(player.getUsername());
         pl.setResponse(reponse);
+        pl.setPlayerSymbol(symbol);
         String msg = "";
         try {
              msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);

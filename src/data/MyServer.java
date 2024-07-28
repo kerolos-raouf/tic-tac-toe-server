@@ -326,6 +326,7 @@ class PlayerHandler extends Thread{
         } catch (SQLException | JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
     void sendRequestToOppenent(String name)
     {

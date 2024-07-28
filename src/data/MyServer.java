@@ -11,6 +11,7 @@ import DB.Player;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.JSONParser;
 import domain.PlayerMessageBody;
+import domain.ScoreBoardItem;
 import domain.SocketRoute;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
@@ -235,7 +237,11 @@ class PlayerHandler extends Thread{
                     case WAITING_REQUEST_TO_PLAY:
                         break;
                     case SCORE_BOARD:
+                    {
+                        sendScoreBoard();
                         break;
+                    }  
+                      
                     default:
                         throw new AssertionError(pl.getState().name());
                 }
@@ -328,5 +334,37 @@ class PlayerHandler extends Thread{
         }
     }
     
+    
+    void sendScoreBoard()
+    {
+        ArrayList<ScoreBoardItem> scoreList = new ArrayList<>();
+        ArrayList<Player> playersList = new ArrayList<>();
+        try {
+            playersList = DBAccess.getAllPlayers();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        for(Player player : playersList)
+        {
+            scoreList.add(new ScoreBoardItem(player.getUsername(),player.getScore()));
+        }
+        
+        
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.SCORE_BOARD);
+        pl.setScoreBoardItem(scoreList);
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if(!scoreList.isEmpty())
+        {
+            printStream.println(msg);
+        }
+    }
 }
 

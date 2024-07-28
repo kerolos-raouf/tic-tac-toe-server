@@ -155,11 +155,11 @@ class PlayerHandler extends Thread{
     private PlayerHandler opponent;
     private Player player;
     
-    static ConcurrentSkipListSet<PlayerHandler> playerHandlers;
+    static Vector<PlayerHandler> playerHandlers;
 
     
     static{
-        playerHandlers = new ConcurrentSkipListSet<>();
+        playerHandlers = new Vector<>();
     }
     
     public PlayerHandler(Socket playerSocket)
@@ -208,6 +208,7 @@ class PlayerHandler extends Thread{
                     {
 
                         checkLoginValidation(pl.getUsername(),pl.getPassword());
+                        System.out.println("done");
 
                         break;
                     }
@@ -218,7 +219,7 @@ class PlayerHandler extends Thread{
                     {
 
                         checkSignupValidation(pl.getUsername(),pl.getPassword());
-
+                        System.out.println("signup");
                         break;
                     }
                     case SIGN_UP_RESPONSE:
@@ -233,6 +234,7 @@ class PlayerHandler extends Thread{
                     case CHECK_SERVER:
                         break;
                     case ALL_PLAYERS:
+                        sendAllPlayers(pl);
                         break;
                     case REQUEST_TO_PLAY:
                     {
@@ -245,10 +247,6 @@ class PlayerHandler extends Thread{
                         respondToRequestToPlay(pl.getOpponentName(),pl.getResponse());
                         break;
                     }
-                    case DIALOG_REQUEST_TO_PLAY:
-                        break;
-                    case WAITING_REQUEST_TO_PLAY:
-                        break;
                     case SCORE_BOARD:
                     {
                         sendScoreBoard();
@@ -289,6 +287,7 @@ class PlayerHandler extends Thread{
         try{
              try {
                 pl.setPlayers(DBAccess.getAllPlayers());
+                pl.setState(SocketRoute.ALL_PLAYERS);
             } catch (SQLException ex) {
                 pl.setMessage("Couldn't get all players at the moment , please try again");
                 pl.setState(SocketRoute.ERROR_OCCURED);
@@ -311,12 +310,19 @@ class PlayerHandler extends Thread{
             response = DBAccess.loginValidation(userName, password);
             if(response)
             {
+                DBAccess.setActivityState(userName, true);
                 Player currentPlayer = DBAccess.getPlayerUsername(userName);
                 player = currentPlayer;
+                pl.setUsername(currentPlayer.getUsername());
+                pl.setPassword(currentPlayer.getPassword());
+                pl.setScore(currentPlayer.getScore());
+                pl.setIsActive(currentPlayer.isIsActive());
+                pl.setIsPlaying(currentPlayer.isIsPlaying());
             }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
-            opponent.printStream.println(msg);
+            
+            printStream.println(msg);
         } catch (SQLException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (JsonProcessingException ex) {
@@ -338,7 +344,7 @@ class PlayerHandler extends Thread{
             }  
             pl.setResponse(!response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
-            opponent.printStream.println(msg);
+            printStream.println(msg);
         } catch (SQLException | JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }

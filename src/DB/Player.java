@@ -22,6 +22,10 @@ public class Player {
     
     public Player(){}
 
+    public Player(String username) {
+        this.username = username;
+    }
+
 
     public Player(String username, String password, int score, boolean isPlaying, boolean isActive) {
         this.username = username;

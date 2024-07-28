@@ -15,7 +15,7 @@
     <jar href="lib\jackson-core-2.17.1.jar" size="581860" download="eager" />
     <jar href="lib\jackson-databind-2.17.1.jar" size="1649385" download="eager" />
     <jar href="lib\java-json.jar" size="84697" download="eager" />
-    <jar href="tictactoeServer.jar" size="436162" download="eager" />
+    <jar href="tictactoeServer.jar" size="436239" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="tictactoeServer" >
     <param name="requiredFXVersion" value="8.0+"/>

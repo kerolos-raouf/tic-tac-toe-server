@@ -351,7 +351,6 @@ class PlayerHandler extends Thread{
 
     void sendRequestToOppenent(String name)
     {
-        
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setState(SocketRoute.REQUEST_TO_PLAY);
         pl.setOpponentName(player.getUsername());
@@ -365,10 +364,8 @@ class PlayerHandler extends Thread{
         {
             for(PlayerHandler playerHandler : playerHandlers)
             {
-                //playerHandler.printStream.println(msg);
-                if(playerHandler.player.getUsername() == name)
+                if(playerHandler.player != null && playerHandler.player.getUsername().equals(name))
                 {
-                    System.out.println(playerHandler.player.getUsername());
                     playerHandler.printStream.println(msg);
                 }
             }
@@ -392,7 +389,7 @@ class PlayerHandler extends Thread{
         {
             for(PlayerHandler playerHandler : playerHandlers)
             {
-                if(playerHandler.player.getUsername() == name)
+                if(playerHandler.player.getUsername().equals(name))
                 {
                     playerHandler.printStream.println(msg);
                 }
@@ -411,9 +408,9 @@ class PlayerHandler extends Thread{
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        for(Player player : playersList)
+        for(Player playerInList : playersList)
         {
-            scoreList.add(new ScoreBoardItem(player.getUsername(),player.getScore()));
+            scoreList.add(new ScoreBoardItem(playerInList.getUsername(),playerInList.getScore()));
         }
         
         

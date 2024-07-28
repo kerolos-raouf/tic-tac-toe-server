@@ -19,13 +19,18 @@ public class PlayerMessageBody extends Player{
     private String message;
     private String move;
     private ArrayList<ScoreBoardItem> scoreBoardItem;
+
+    private String opponentName;
+
     private ArrayList<Player> players;
+
 
 
 
     
         public ArrayList<Player> getPlayers()
     {
+
         return players;
     }
 
@@ -42,6 +47,7 @@ public class PlayerMessageBody extends Player{
     public void setMessage(String message)
     {
         this.message = message;
+
     }
     
     
@@ -116,6 +122,14 @@ public class PlayerMessageBody extends Player{
 
     public void setResponse(boolean response) {
         this.response = response;
+    }
+
+    public String getOpponentName() {
+        return opponentName;
+    }
+
+    public void setOpponentName(String opponentName) {
+        this.opponentName = opponentName;
     }
     
     

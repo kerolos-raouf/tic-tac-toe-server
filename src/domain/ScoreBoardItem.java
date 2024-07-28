@@ -12,4 +12,29 @@ package domain;
 public class ScoreBoardItem {
     String player;
     int score;
+
+    public ScoreBoardItem(String player, int score) {
+        this.player = player;
+        this.score = score;
+    }
+
+    
+    
+    public String getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(String player) {
+        this.player = player;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+    
+    
 }

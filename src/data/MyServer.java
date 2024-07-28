@@ -309,6 +309,11 @@ class PlayerHandler extends Thread{
         boolean response;
         try {
             response = DBAccess.loginValidation(userName, password);
+            if(response)
+            {
+                Player currentPlayer = DBAccess.getPlayerUsername(userName);
+                player = currentPlayer;
+            }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
             opponent.printStream.println(msg);

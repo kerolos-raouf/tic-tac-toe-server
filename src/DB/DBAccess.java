@@ -129,6 +129,33 @@ public class DBAccess {
     updateStmt.executeUpdate();
   }
   
+  public static void updateWinningPlayerScore(String winningUserName) throws SQLException
+  {
+    PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET ISPLAYING = ?, SCORE = SCORE + 1  WHERE USERNAME = ?");
+    updateStmt.setBoolean(1,false);
+    updateStmt.setString(2, winningUserName);
+    updateStmt.executeUpdate();
+  }
+  
+  public static void updateLosingPlayerState(String losingPlayerState) throws SQLException
+  {
+    PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET ISPLAYING = ?, SCORE = CASE WHEN SCORE > 0 THEN SCORE -1 ELSE SCORE END  WHERE USERNAME = ?");
+    updateStmt.setBoolean(1,false);
+    updateStmt.setString(2, losingPlayerState);
+    updateStmt.executeUpdate();
+  }
+  
+  public static void logout(String username) throws SQLException{
+      PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET ISACTIVE = ?, ISPLAYING = ?  WHERE USERNAME =?");
+    updateStmt.setBoolean(1,false);
+    updateStmt.setBoolean(2,false);
+    updateStmt.setString(3, username);
+    updateStmt.executeUpdate();
+  }
+  
    public static void setActivityState(String username, boolean active) throws SQLException
   {
     PreparedStatement updateStmt = 

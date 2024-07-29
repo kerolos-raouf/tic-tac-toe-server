@@ -286,10 +286,10 @@ class PlayerHandler extends Thread{
                 try {
                     System.out.println("signed out crashed player");
                     DBAccess.logout(player.getUsername());
-                    sendAllPlayers();
                 } catch (SQLException ex1) {
                     Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex1);
                 }
+                    sendAllPlayers();
                    playerHandlers.remove(this);
                    stop();
                    break;
@@ -354,7 +354,8 @@ class PlayerHandler extends Thread{
             } 
              msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
              for(PlayerHandler ph: playerHandlers){
-                 ph.printStream.println(msg);
+                 if(ph != null)
+                    ph.printStream.println(msg);
              }
         }catch (JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);

@@ -159,7 +159,7 @@ public class DBAccess {
    public static void setActivityState(String username, boolean active) throws SQLException
   {
     PreparedStatement updateStmt = 
-             con.prepareStatement("UPDATE PLAYER SET isActive=?  WHERE USERNAME =?");
+             con.prepareStatement("UPDATE PLAYER SET ISACTIVE = ?  WHERE USERNAME = ?");
     updateStmt.setBoolean(1,active);
     updateStmt.setString(2, username);
     updateStmt.executeUpdate();

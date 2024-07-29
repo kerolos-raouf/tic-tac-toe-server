@@ -177,15 +177,6 @@ public class DBAccess {
     updateStmt.executeUpdate();
   }
    
-   public static void logout(String username) throws SQLException{
-       PreparedStatement updateStmt = 
-             con.prepareStatement("UPDATE PLAYER SET ISPLAYING = ?, ISACTIVE = ?  WHERE USERNAME =?");
-    updateStmt.setBoolean(1, false);
-    updateStmt.setBoolean(2, false);
-    updateStmt.setString(3, username);
-    updateStmt.executeUpdate();
-       
-   }
    
    
   public static void closeConnection() throws SQLException{

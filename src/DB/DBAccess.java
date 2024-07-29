@@ -123,7 +123,7 @@ public class DBAccess {
   public static void setPlayingState(String username, boolean playing) throws SQLException
   {
     PreparedStatement updateStmt = 
-             con.prepareStatement("UPDATE PLAYER SET isPlaying=?  WHERE USERNAME =?");
+             con.prepareStatement("UPDATE PLAYER SET ISPLAYING= ?  WHERE USERNAME =?");
     updateStmt.setBoolean(1,playing);
     updateStmt.setString(2, username);
     updateStmt.executeUpdate();
@@ -159,11 +159,24 @@ public class DBAccess {
    public static void setActivityState(String username, boolean active) throws SQLException
   {
     PreparedStatement updateStmt = 
+
              con.prepareStatement("UPDATE PLAYER SET ISACTIVE = ?  WHERE USERNAME = ?");
+
+
     updateStmt.setBoolean(1,active);
     updateStmt.setString(2, username);
     updateStmt.executeUpdate();
   }
+   
+   public static void logout(String username) throws SQLException{
+       PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET ISPLAYING = ?, ISACTIVE = ?  WHERE USERNAME =?");
+    updateStmt.setBoolean(1, false);
+    updateStmt.setBoolean(2, false);
+    updateStmt.setString(3, username);
+    updateStmt.executeUpdate();
+       
+   }
    
    
   public static void closeConnection() throws SQLException{

@@ -5,6 +5,7 @@
  */
 package tictactoeserver;
 
+import data.MyServer;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -25,6 +26,15 @@ public class TictactoeServer extends Application {
         stage.setScene(scene);
         stage.show();
     }
+
+    @Override
+    public void stop() throws Exception {
+        if(MyServer.isInitialized())
+            MyServer.getInstance().close();
+        super.stop();
+    }
+    
+    
 
     /**
      * @param args the command line arguments

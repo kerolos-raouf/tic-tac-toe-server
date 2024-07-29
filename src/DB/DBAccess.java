@@ -129,6 +129,15 @@ public class DBAccess {
     updateStmt.executeUpdate();
   }
   
+  public static void resetAllPlayersStates() throws SQLException
+  {
+    PreparedStatement updateStmt = 
+             con.prepareStatement("UPDATE PLAYER SET ISPLAYING=? , ISACTIVE=?");
+    updateStmt.setBoolean(1,false);
+    updateStmt.setBoolean(2, false);
+    updateStmt.executeUpdate();
+  }
+  
   public static void updateWinningPlayerScore(String winningUserName) throws SQLException
   {
     PreparedStatement updateStmt = 

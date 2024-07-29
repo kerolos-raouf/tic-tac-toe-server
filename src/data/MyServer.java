@@ -192,6 +192,7 @@ class PlayerHandler extends Thread{
 
     @Override
     public void run() {
+        int i = 0;
        while(true){
             try {
                 String str = bufferedReader.readLine();
@@ -202,14 +203,13 @@ class PlayerHandler extends Thread{
                     case PLAYER_MOVE:
                     {
                         setMoveToTheOpponent(pl.getOpponentName(),pl.getMove());
+                        System.out.println("move number " + i++);
                         break;
                     }
                     case LOG_IN:
 
                     {
-
                         checkLoginValidation(pl.getUsername(),pl.getPassword());
-
                         break;
                     }
                     case LOG_IN_RESPONSE:
@@ -217,15 +217,13 @@ class PlayerHandler extends Thread{
                     case SIGN_UP:
 
                     {
-
                         checkSignupValidation(pl.getUsername(),pl.getPassword());
-                        System.out.println("signup");
                         break;
                     }
                     case SIGN_UP_RESPONSE:
                         break;
                     case AVAILABLE_PLAYERS:
-                        sendAllPlayers(pl);
+                        sendAllPlayers();
                         break;
                     case LOG_OUT:
                         break;
@@ -234,7 +232,7 @@ class PlayerHandler extends Thread{
                     case CHECK_SERVER:
                         break;
                     case ALL_PLAYERS:
-                        sendAllPlayers(pl);
+                        sendAllPlayers();
                         break;
                     case REQUEST_TO_PLAY:
                     {
@@ -252,6 +250,11 @@ class PlayerHandler extends Thread{
                         sendScoreBoard();
                         break;
                     }  
+                    case PLAY_AGAIN:
+                    {
+                        playAgain(pl.getOpponentName());
+                        break;
+                    }
                       
                     default:
                         throw new AssertionError(pl.getState().name());
@@ -267,7 +270,28 @@ class PlayerHandler extends Thread{
        }
     }
     
-    
+    void playAgain(String op)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.PLAY_AGAIN);
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(!msg.isEmpty())
+        {
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player != null && playerHandler.player.getUsername().equals(op))
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
+        }
+        
+    }
     void setMoveToTheOpponent(String op,String move)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
@@ -288,8 +312,9 @@ class PlayerHandler extends Thread{
         }
     }
 
-    private void sendAllPlayers(PlayerMessageBody pl)
+    private void sendAllPlayers()
     {
+        PlayerMessageBody pl = new PlayerMessageBody();
         String msg;
         try{
              try {
@@ -324,6 +349,7 @@ class PlayerHandler extends Thread{
                 pl.setScore(player.getScore());
                 pl.setIsActive(player.isIsActive());
                 pl.setIsPlaying(player.isIsPlaying());
+                sendAllPlayers();
             }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -346,7 +372,8 @@ class PlayerHandler extends Thread{
             if(!response)
             {
                 Player newPlayer = new Player(userName,password,0,false,false);
-                DBAccess.insertPlayer(newPlayer);         
+                DBAccess.insertPlayer(newPlayer);  
+                sendAllPlayers();
             }  
             pl.setResponse(!response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);

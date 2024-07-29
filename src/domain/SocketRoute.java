@@ -26,4 +26,5 @@ public enum SocketRoute {
     SCORE_BOARD,
     CHECK_SERVER,
     ERROR_OCCURED,
+    PLAY_AGAIN,
 }

@@ -192,9 +192,11 @@ class PlayerHandler extends Thread{
 
     @Override
     public void run() {
+        int i = 0;
        while(true){
             try {
                 String str = bufferedReader.readLine();
+                if(str == null) throw new IOException();
                 System.out.println(str);
                 PlayerMessageBody pl = JSONParser.convertFromJSONToPlayerMessageBody(str);
                 switch(pl.getState())
@@ -202,14 +204,13 @@ class PlayerHandler extends Thread{
                     case PLAYER_MOVE:
                     {
                         setMoveToTheOpponent(pl.getOpponentName(),pl.getMove());
+                        System.out.println("move number " + i++);
                         break;
                     }
                     case LOG_IN:
 
                     {
-
                         checkLoginValidation(pl.getUsername(),pl.getPassword());
-
                         break;
                     }
                     case LOG_IN_RESPONSE:
@@ -217,15 +218,13 @@ class PlayerHandler extends Thread{
                     case SIGN_UP:
 
                     {
-
                         checkSignupValidation(pl.getUsername(),pl.getPassword());
-                        System.out.println("signup");
                         break;
                     }
                     case SIGN_UP_RESPONSE:
                         break;
                     case AVAILABLE_PLAYERS:
-                        sendAllPlayers(pl);
+                        sendAllPlayers();
                         break;
                     case LOG_OUT:
                         logout(pl);
@@ -235,7 +234,7 @@ class PlayerHandler extends Thread{
                     case CHECK_SERVER:
                         break;
                     case ALL_PLAYERS:
-                        sendAllPlayers(pl);
+                        sendAllPlayers();
                         break;
                     case REQUEST_TO_PLAY:
                     {
@@ -246,6 +245,13 @@ class PlayerHandler extends Thread{
                     case RESPONSE_TO_REQUEST_TO_PLAY:
                     {
                         respondToRequestToPlay(pl.getOpponentName(),pl.getResponse(),pl.isPlayerSymbol());
+                        if(pl.getResponse() == true){
+                            for(PlayerHandler ph : playerHandlers){
+                                opponent = ph;
+                                opponent.opponent = this;
+                                break;
+                            }
+                        }
                         break;
                     }
                     case SCORE_BOARD:
@@ -253,6 +259,11 @@ class PlayerHandler extends Thread{
                         sendScoreBoard();
                         break;
                     }  
+                    case PLAY_AGAIN:
+                    {
+                        playAgain(pl.getOpponentName());
+                        break;
+                    }
                       
                     default:
                         throw new AssertionError(pl.getState().name());
@@ -260,15 +271,55 @@ class PlayerHandler extends Thread{
                 System.out.println(str);
                } catch (IOException ex) {
                    System.out.println("connection reset exception message is expected, just added this line to check if another exception message is thrown");
-                   Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
-                   stop();
+                   if(opponent != null){
+                       PlayerMessageBody pl = new PlayerMessageBody();
+                   pl.setState(SocketRoute.SURRENDER);
+                       try {
+                           DBAccess.updateWinningPlayerScore(opponent.player.getUsername());
+                           DBAccess.updateLosingPlayerState(player.getUsername());
+                           opponent.printStream.println(JSONParser.convertFromPlayerMessageBodyToJSON(pl));
+                       } catch (SQLException ex1) {
+                           
+                       }catch (JsonProcessingException ex1) {
+                    Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+                   }
+                try {
+                    System.out.println("signed out crashed player");
+                    DBAccess.logout(player.getUsername());
+                } catch (SQLException ex1) {
+                    Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+                    sendAllPlayers();
                    playerHandlers.remove(this);
+                   stop();
                    break;
                }
        }
     }
     
-    
+    void playAgain(String op)
+    {
+        PlayerMessageBody pl = new PlayerMessageBody();
+        pl.setState(SocketRoute.PLAY_AGAIN);
+        String msg = "";
+        try {
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(!msg.isEmpty())
+        {
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player != null && playerHandler.player.getUsername().equals(op))
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
+        }
+        
+    }
     void setMoveToTheOpponent(String op,String move)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
@@ -289,8 +340,9 @@ class PlayerHandler extends Thread{
         }
     }
 
-    private void sendAllPlayers(PlayerMessageBody pl)
+    private void sendAllPlayers()
     {
+        PlayerMessageBody pl = new PlayerMessageBody();
         String msg;
         try{
              try {
@@ -302,7 +354,10 @@ class PlayerHandler extends Thread{
                 Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
             } 
              msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
-             printStream.println(msg);
+             for(PlayerHandler ph: playerHandlers){
+                 if(ph != null)
+                    ph.printStream.println(msg);
+             }
         }catch (JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }  
@@ -343,6 +398,7 @@ class PlayerHandler extends Thread{
                 pl.setScore(player.getScore());
                 pl.setIsActive(player.isIsActive());
                 pl.setIsPlaying(player.isIsPlaying());
+                sendAllPlayers();
             }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -365,7 +421,8 @@ class PlayerHandler extends Thread{
             if(!response)
             {
                 Player newPlayer = new Player(userName,password,0,false,false);
-                DBAccess.insertPlayer(newPlayer);         
+                DBAccess.insertPlayer(newPlayer);  
+                sendAllPlayers();
             }  
             pl.setResponse(!response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);

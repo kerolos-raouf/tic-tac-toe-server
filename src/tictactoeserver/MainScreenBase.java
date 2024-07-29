@@ -44,8 +44,8 @@ public class MainScreenBase extends AnchorPane {
         setPrefHeight(1000.0);
         setPrefWidth(1500.0);
 
-        imageView.setFitHeight(1000.0);
-        imageView.setFitWidth(1500.0);
+        imageView.fitHeightProperty().bind(this.heightProperty());
+        imageView.fitWidthProperty().bind(this.widthProperty());
         imageView.setPickOnBounds(true);
         imageView.setPreserveRatio(true);
         imageView.setImage(new Image(ResourcesLocation.class.getResource("images/backgrounds/main.jpg").toExternalForm()));

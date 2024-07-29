@@ -20,7 +20,7 @@ public class TictactoeServer extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = new MainScreenBase(stage);
         
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 1500, 1000);
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();

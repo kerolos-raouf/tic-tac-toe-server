@@ -1,5 +1,9 @@
 package tictactoeserver;
 
+import DB.DBAccess;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -28,9 +32,10 @@ public class MainScreenBase extends AnchorPane {
         stopButton = new Button();
         exitButton = new Button();
         text = new Text();
-        
+
         //change ip and port here
         ip = "192.168.1.15";
+
         port = 5005;
         serverController = new ServerController(ip, 5005);
         
@@ -39,8 +44,8 @@ public class MainScreenBase extends AnchorPane {
         setPrefHeight(1000.0);
         setPrefWidth(1500.0);
 
-        imageView.setFitHeight(1000.0);
-        imageView.setFitWidth(1500.0);
+        imageView.fitHeightProperty().bind(this.heightProperty());
+        imageView.fitWidthProperty().bind(this.widthProperty());
         imageView.setPickOnBounds(true);
         imageView.setPreserveRatio(true);
         imageView.setImage(new Image(ResourcesLocation.class.getResource("images/backgrounds/main.jpg").toExternalForm()));
@@ -113,5 +118,12 @@ public class MainScreenBase extends AnchorPane {
         getChildren().add(exitButton);
         getChildren().add(text);
         
+        stage.setOnCloseRequest((e) -> {
+            try {
+                DBAccess.closeConnection();
+            } catch (SQLException ex) {
+                Logger.getLogger(MainScreenBase.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
 }

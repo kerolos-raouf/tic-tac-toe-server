@@ -13,31 +13,46 @@ import java.util.ArrayList;
  * @author Kerolos Raouf
  */
 public class PlayerMessageBody extends Player{
-    
+
     private SocketRoute state;
     private boolean response;
     private String move;
     private ArrayList<ScoreBoardItem> scoreBoardItem;
+    private String opponentName;
+    private ArrayList<Player> players;
+    private boolean playerSymbol;
+    private int gameBoardState;
+    private String message;;
 
-    public PlayerMessageBody()
+    
+       public PlayerMessageBody()
     {
         super();
     }
-    
-    public PlayerMessageBody(SocketRoute state, String move, boolean isRquestAccepted, boolean isServerAwake, ArrayList<ScoreBoardItem> scoreBoardItem) {
-        this.state = state;
-        this.move = move;
-        this.scoreBoardItem = scoreBoardItem;
-    }
 
-    public PlayerMessageBody(SocketRoute state, String move, boolean isRquestAccepted, boolean isServerAwake, ArrayList<ScoreBoardItem> scoreBoardItem, String username, String password, int score, boolean isPlaying, boolean isActive) {
-        super(username, password, score, isPlaying, isActive);
-        this.state = state;
-        this.move = move;
-        this.scoreBoardItem = scoreBoardItem;
-    }
 
     
+        public ArrayList<Player> getPlayers()
+    {
+
+        return players;
+    }
+
+    public void setPlayers(ArrayList<Player> players)
+    {
+        this.players = players;
+    }
+
+       public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(String message)
+    {
+        this.message = message;
+
+    }
     
     
     public String getUsername() {
@@ -111,6 +126,33 @@ public class PlayerMessageBody extends Player{
 
     public void setResponse(boolean response) {
         this.response = response;
+    }
+
+    public String getOpponentName() {
+        return opponentName;
+    }
+
+    public void setOpponentName(String opponentName) {
+        this.opponentName = opponentName;
+    }
+
+    public boolean isPlayerSymbol() {
+        return playerSymbol;
+    }
+
+    public void setPlayerSymbol(boolean playerSymbol) {
+        this.playerSymbol = playerSymbol;
+    }
+    
+    
+    
+ 
+    public int getGameBoardState() {
+        return gameBoardState;
+    }
+
+    public void setGameBoardState(int gameBoardState) {
+        this.gameBoardState = gameBoardState;
     }
     
     

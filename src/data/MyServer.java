@@ -201,7 +201,7 @@ class PlayerHandler extends Thread{
                 {
                     case PLAYER_MOVE:
                     {
-                        setMoveToTheOpponent(pl.getMove());
+                        setMoveToTheOpponent(pl.getOpponentName(),pl.getMove());
                         break;
                     }
                     case LOG_IN:
@@ -268,14 +268,21 @@ class PlayerHandler extends Thread{
     }
     
     
-    void setMoveToTheOpponent(String move)
+    void setMoveToTheOpponent(String op,String move)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setMove(move);
         pl.setState(SocketRoute.PLAYER_MOVE);
+        
         try {
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
-            opponent.printStream.println(msg);
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player != null && playerHandler.player.getUsername().equals(op))
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
         } catch (JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -372,13 +379,14 @@ class PlayerHandler extends Thread{
         }
     }
     
-    void respondToRequestToPlay(String name,boolean reponse,boolean symbol)
+    void respondToRequestToPlay(String name,boolean response,boolean symbol)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setState(SocketRoute.RESPONSE_TO_REQUEST_TO_PLAY);
         pl.setOpponentName(player.getUsername());
-        pl.setResponse(reponse);
+        pl.setResponse(response);
         pl.setPlayerSymbol(symbol);
+        
         String msg = "";
         try {
              msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -391,6 +399,10 @@ class PlayerHandler extends Thread{
             {
                 if(playerHandler.player.getUsername().equals(name))
                 {
+                    if(response)
+                    {
+                        playerHandler.opponent = this;
+                    }
                     playerHandler.printStream.println(msg);
                 }
             }

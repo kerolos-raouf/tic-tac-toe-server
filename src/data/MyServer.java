@@ -195,12 +195,13 @@ class PlayerHandler extends Thread{
        while(true){
             try {
                 String str = bufferedReader.readLine();
+                System.out.println(str);
                 PlayerMessageBody pl = JSONParser.convertFromJSONToPlayerMessageBody(str);
                 switch(pl.getState())
                 {
                     case PLAYER_MOVE:
                     {
-                        setMoveToTheOpponent(pl.getMove());
+                        setMoveToTheOpponent(pl.getOpponentName(),pl.getMove());
                         break;
                     }
                     case LOG_IN:
@@ -208,7 +209,6 @@ class PlayerHandler extends Thread{
                     {
 
                         checkLoginValidation(pl.getUsername(),pl.getPassword());
-                        System.out.println("done");
 
                         break;
                     }
@@ -269,14 +269,21 @@ class PlayerHandler extends Thread{
     }
     
     
-    void setMoveToTheOpponent(String move)
+    void setMoveToTheOpponent(String op,String move)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setMove(move);
         pl.setState(SocketRoute.PLAYER_MOVE);
+        
         try {
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
-            opponent.printStream.println(msg);
+            for(PlayerHandler playerHandler : playerHandlers)
+            {
+                if(playerHandler.player != null && playerHandler.player.getUsername().equals(op))
+                {
+                    playerHandler.printStream.println(msg);
+                }
+            }
         } catch (JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -330,13 +337,12 @@ class PlayerHandler extends Thread{
             if(response)
             {
                 DBAccess.setActivityState(userName, true);
-                Player currentPlayer = DBAccess.getPlayerUsername(userName);
-                player = currentPlayer;
-                pl.setUsername(currentPlayer.getUsername());
-                pl.setPassword(currentPlayer.getPassword());
-                pl.setScore(currentPlayer.getScore());
-                pl.setIsActive(currentPlayer.isIsActive());
-                pl.setIsPlaying(currentPlayer.isIsPlaying());
+                player = DBAccess.getPlayerByUsername(userName);
+                pl.setUsername(player.getUsername());
+                pl.setPassword(player.getPassword());
+                pl.setScore(player.getScore());
+                pl.setIsActive(player.isIsActive());
+                pl.setIsPlaying(player.isIsPlaying());
             }
              pl.setResponse(response);
             String msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -384,7 +390,7 @@ class PlayerHandler extends Thread{
         {
             for(PlayerHandler playerHandler : playerHandlers)
             {
-                if(playerHandler.player.getUsername() == name)
+                if(playerHandler.player != null && playerHandler.player.getUsername().equals(name))
                 {
                     playerHandler.printStream.println(msg);
                 }
@@ -392,13 +398,14 @@ class PlayerHandler extends Thread{
         }
     }
     
-    void respondToRequestToPlay(String name,boolean reponse,boolean symbol)
+    void respondToRequestToPlay(String name,boolean response,boolean symbol)
     {
         PlayerMessageBody pl = new PlayerMessageBody();
         pl.setState(SocketRoute.RESPONSE_TO_REQUEST_TO_PLAY);
         pl.setOpponentName(player.getUsername());
-        pl.setResponse(reponse);
+        pl.setResponse(response);
         pl.setPlayerSymbol(symbol);
+        
         String msg = "";
         try {
              msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
@@ -409,8 +416,12 @@ class PlayerHandler extends Thread{
         {
             for(PlayerHandler playerHandler : playerHandlers)
             {
-                if(playerHandler.player.getUsername() == name)
+                if(playerHandler.player.getUsername().equals(name))
                 {
+                    if(response)
+                    {
+                        playerHandler.opponent = this;
+                    }
                     playerHandler.printStream.println(msg);
                 }
             }
@@ -428,9 +439,9 @@ class PlayerHandler extends Thread{
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        for(Player player : playersList)
+        for(Player playerInList : playersList)
         {
-            scoreList.add(new ScoreBoardItem(player.getUsername(),player.getScore()));
+            scoreList.add(new ScoreBoardItem(playerInList.getUsername(),playerInList.getScore()));
         }
         
         

@@ -75,23 +75,23 @@ public class DBAccess {
        insertStmt.close();
        
 }
-   public static Player getPlayerUsername(String username) throws SQLException
+   public static Player getPlayerByUsername(String username) throws SQLException
    {
      ResultSet rs ;
-     String foundUser;
      Player player = null;
      PreparedStatement stmt = 
-             con.prepareStatement("SELECT USERNAME FROM PLAYER WHERE USERNAME =? ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+             con.prepareStatement("SELECT * FROM PLAYER WHERE USERNAME =? ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
   
      stmt.setString(1, username);
      rs = stmt.executeQuery();
      if (rs.next())
      {
-        foundUser = rs.getString("USERNAME");
-        player = new Player (foundUser);
+        player = new Player(rs);
      }
      return player;
    }
+   
+   
 
   public static boolean signupValidation(String username) throws SQLException{
     

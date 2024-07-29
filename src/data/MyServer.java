@@ -44,6 +44,10 @@ public class MyServer extends Thread{
     //Singleton instance of server
     private static MyServer instance;
 
+    
+    public static boolean isInitialized(){
+        return instance != null;
+    }
     private static void setInstance(MyServer instance)
     {
         MyServer.instance = instance;
@@ -107,6 +111,7 @@ public class MyServer extends Thread{
             socket = new ServerSocket(port, 0, InetAddress.getByName(this.addr));
         try {
             DBAccess.initiateDbConnection();
+            DBAccess.resetAllPlayersStates();
         } catch (SQLException ex) {
             Logger.getLogger(MyServer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -141,10 +146,14 @@ public class MyServer extends Thread{
     {
         //NOTE: this should throw an exception because the thread will be waiiting for a player to connect
         socket.close();
+        for(PlayerHandler ph: PlayerHandler.playerHandlers){
+            ph.stop();
+        }
+        MyServer.setInstance(null);
         stop();
 //        interrupt();
         // TODO: resources cleaning functionality of player handler
-        MyServer.setInstance(null);
+        
     }
 }
 
@@ -155,7 +164,7 @@ class PlayerHandler extends Thread{
     private PlayerHandler opponent;
     private Player player;
     
-    static Vector<PlayerHandler> playerHandlers;
+    public static Vector<PlayerHandler> playerHandlers;
 
     
     static{
@@ -171,6 +180,7 @@ class PlayerHandler extends Thread{
             player = null;
             opponent = null;
             playerHandlers.add(this);
+           
 //            jsonObject = new JSONObject(Player.toMap(player));
 //              jsonObject = new JSONObject(new HashMap<String, Object>(){{
 //           put("hello", "hello");

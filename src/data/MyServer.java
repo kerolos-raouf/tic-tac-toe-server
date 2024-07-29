@@ -237,6 +237,7 @@ class PlayerHandler extends Thread{
                         sendAllPlayers();
                         break;
                     case LOG_OUT:
+                        logout(pl);
                         break;
                     case SURRENDER:
                         break;
@@ -367,6 +368,24 @@ class PlayerHandler extends Thread{
                  if(ph != null)
                     ph.printStream.println(msg);
              }
+        }catch (JsonProcessingException ex) {
+            Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }
+    
+    private void logout(PlayerMessageBody pl ){
+        String msg;
+        try{
+             try {
+                DBAccess.logout(pl.getUsername());
+                pl.setState(SocketRoute.LOG_OUT);
+            } catch (SQLException ex) {
+                pl.setMessage("Couldn't get all players at the moment , please try again");
+                pl.setState(SocketRoute.ERROR_OCCURED);
+                Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+             msg = JSONParser.convertFromPlayerMessageBodyToJSON(pl);
+             printStream.println(msg);
         }catch (JsonProcessingException ex) {
             Logger.getLogger(PlayerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }  

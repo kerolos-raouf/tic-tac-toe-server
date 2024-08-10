@@ -26,7 +26,7 @@ public class MainScreenBase extends AnchorPane {
     private final ServerController serverController;
 
     public MainScreenBase(Stage stage) {
-
+        ServerController.mainScreenBase = this;
         imageView = new ImageView();
         startButton = new Button();
         stopButton = new Button();
@@ -60,9 +60,9 @@ public class MainScreenBase extends AnchorPane {
         startButton.setTextFill(javafx.scene.paint.Color.valueOf("#d9d9d9"));
         startButton.setFont(new Font("Agency FB Bold", 48.0));
         startButton.setOnAction((e) -> {
-            serverController.startServer();
-            stopButton.setDisable(false);
-            startButton.setDisable(true);
+            serverController.
+                startServer();
+            
         });
 
         stopButton.setLayoutX(174.0);

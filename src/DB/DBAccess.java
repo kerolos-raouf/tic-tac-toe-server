@@ -52,7 +52,7 @@ public class DBAccess {
     
    public static ArrayList<Player> getAllPlayers() throws SQLException{
         if(ps != null) ps.close();
-        ps = con.prepareStatement("SELECT * FROM PLAYER", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        ps = con.prepareStatement("SELECT * FROM PLAYER ORDER BY SCORE DESC", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         rs = ps.executeQuery();
         ArrayList<Player> temp = new ArrayList<>();
         while(rs.next()){
@@ -141,9 +141,8 @@ public class DBAccess {
   public static void updateWinningPlayerScore(String winningUserName) throws SQLException
   {
     PreparedStatement updateStmt = 
-             con.prepareStatement("UPDATE PLAYER SET ISPLAYING = ?, SCORE = SCORE + 1  WHERE USERNAME = ?");
-    updateStmt.setBoolean(1,false);
-    updateStmt.setString(2, winningUserName);
+             con.prepareStatement("UPDATE PLAYER SET SCORE = SCORE + 1  WHERE USERNAME = ?");
+    updateStmt.setString(1, winningUserName);
     updateStmt.executeUpdate();
   }
   
@@ -180,8 +179,8 @@ public class DBAccess {
    
    
   public static void closeConnection() throws SQLException{
-        ps.close();
-        con.close();
+      if(ps != null)  ps.close();
+      if(con != null)  con.close();
         con = null;
         ps = null;
         rs = null;

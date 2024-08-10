@@ -7,8 +7,12 @@ package tictactoeserver;
 
 import data.MyServer;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLTimeoutException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +29,18 @@ public class ServerController{
     private boolean started;
     private boolean suspended;
     private String ip;
+    private int port;
+    static MainScreenBase mainScreenBase;
+
+    public int getPort()
+    {
+        return port;
+    }
+
+    public void setPort(int port)
+    {
+        this.port = port;
+    }
     
     public String getIp(){
         return ip;
@@ -55,16 +71,10 @@ public class ServerController{
     {
         ip = getLocalNetworkAddress();
         ip = ip != null ? ip : serverIp;
-        try {
-            server = MyServer.initialize(ip , port);
-            started = false;
-            suspended = false;
-        } catch (IllegalArgumentException ex) {
-            new CustomDialogBase(ex.getMessage(), "ok", null, null , null);
-        } catch (IOException ex) {
-            Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
-             new CustomDialogBase(ex.getMessage(), "ok", null, null , null);
-        }
+        server = null;
+        this.port = port;
+        started = false;
+        suspended = false;
     }
     
     private String getLocalNetworkAddress(){
@@ -95,36 +105,51 @@ public class ServerController{
     {
         ip = getLocalNetworkAddress();
         ip = ip != null ? ip : serverIp;
-        try {
-            server = MyServer.initialize(ip);
-            System.out.println(server.getPort());
-            System.out.println(server.getAddr());
-        } catch (IllegalArgumentException ex) {
-            new CustomDialogBase(ex.getMessage(), "ok", null, null , null);
-        } catch (IOException ex) {
-            Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
-             new CustomDialogBase(ex.getMessage(), "ok", null, null , null);
-        }
+        server = null;
+        port = -1;
+        started = false;
+        suspended = false;
     }
      
-     void startServer(){
-         server.start();
-         started = true;
+     boolean startServer(){
+        try {
+            server = (port < 1) ? MyServer.initialize(ip) : MyServer.initialize(ip, port);
+            System.out.println(server.getPort());
+            System.out.println(server.getAddr());
+            server.start();
+            started = true;
+            mainScreenBase.stopButton.setDisable(!isStarted());
+            mainScreenBase.startButton.setDisable(isStarted());
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(SQLNonTransientConnectionException ex){
+            started = false;
+            new CustomDialogBase("Couldn't connect to the Database", "Retry", "Cancel", () -> {
+            startServer();
+            }, null);
+        } catch (IOException | SQLException ex) {
+            Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            started = false;
+            new CustomDialogBase(ex.getMessage(), "Retry", "Cancel", () -> {
+            startServer();
+            }, null);
+        }
+        return started;
      }
      
      void suspendServer(){
-         server.suspend();
+         server.pause();
          suspended = true;
      }
      
      void resumeServer(){
-         server.resume();
+         server.carryOn();
          suspended = false;
      }
     
      void stopServer(){
         try {
-            server.close();
+            if(server != null) server.close();
         } catch (IOException ex) {
             Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             new CustomDialogBase(ex.getMessage(), "ok", null, null , null);

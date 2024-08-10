@@ -72,7 +72,7 @@ public class CustomDialogBase extends AnchorPane {
         cancelButton.setPrefHeight(25.0);
         cancelButton.setPrefWidth(125.0);
         cancelButton.setStyle("-fx-background-color: D38CC4;");
-        cancelButton.setText("Cancel");
+        cancelButton.setText(cancelButtonText);
         cancelButton.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
         cancelButton.setTextFill(javafx.scene.paint.Color.valueOf("#050046"));
         cancelButton.setFont(new Font("Agency FB Bold", 18.0));
